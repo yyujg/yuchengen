@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的帅哥照片飘落效果</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            touch-action: manipulation;
+            background: linear-gradient(to bottom, #ff9a9e 0%, #fad0c4 100%);
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            font-family: Arial, sans-serif;
+        }
+        
+        .photo {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            user-select: none;
+            pointer-events: none;
+            animation: fall linear infinite, sway ease-in-out infinite alternate;
+            will-change: transform;
+            opacity: 0.9;
+            border: 2px solid white;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        
+        @keyframes sway {
+            to {
+                transform: translateX(var(--sway-distance));
+            }
+        }
+        
+        @keyframes rotate {
+            0%, 100% {
+                transform: rotate(-8deg);
+            }
+            50% {
+                transform: rotate(8deg);
+            }
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h3>📸 帅哥照片飘落效果</h3>
+        <p>点击屏幕添加更多照片！</p>
+    </div>
+
+    <script>
+        // 使用本地图片路径 - 修改为你实际的图片文件名
+        const photoUrls = [
+            'images/photo1.jpg',
+            'images/photo2.jpg', 
+            'images/photo3.jpg',
+            'images/photo4.jpg',
+            'images/photo5.jpg'
+        ];
+
+        // 配置参数
+        const config = {
+            photoCount: Math.min(window.innerWidth < 768 ? 8 : 12, photoUrls.length),
+            minSize: 70,
+            maxSize: 110,
+            minSpeed: 8,
+            maxSpeed: 18,
+            swayRange: 60
+        };
+
+        // 预加载图片
+        function preloadImages() {
+            photoUrls.forEach(url => {
+                const img = new Image();
+                img.src = url;
+            });
+        }
+
+        // 创建照片
+        function createPhotos() {
+            for (let i = 0; i < config.photoCount; i++) {
+                setTimeout(() => createPhoto(), i * 400);
+            }
+        }
+
+        // 创建单个照片
+        function createPhoto() {
+            const photo = document.createElement('img');
+            photo.className = 'photo';
+            
+            // 随机选择照片
+            const randomIndex = Math.floor(Math.random() * photoUrls.length);
+            photo.src = photoUrls[randomIndex];
+            photo.alt = '帅哥照片';
+            
+            // 随机大小
+            const size = Math.random() * (config.maxSize - config.minSize) + config.minSize;
+            photo.style.width = `${size}px`;
+            photo.style.height = `${size}px`;
+            
+            // 随机透明度
+            const opacity = Math.random() * 0.6 + 0.4;
+            photo.style.opacity = opacity;
+            
+            // 随机起始位置
+            const startX = Math.random() * window.innerWidth;
+            photo.style.left = `${startX}px`;
+            photo.style.top = '-120px';
+            
+            // 随机下落速度
+            const duration = Math.random() * (config.maxSpeed - config.minSpeed) + config.minSpeed;
+            photo.style.animationDuration = `${duration}s, ${duration * 0.6}s`;
+            
+            // 随机摆动幅度
+            const sway = Math.random() * config.swayRange * 2 - config.swayRange;
+            photo.style.setProperty('--sway-distance', `${sway}px`);
+            
+            // 随机旋转效果
+            if (Math.random() > 0.6) {
+                photo.style.animation += `, rotate ${duration * 0.4}s ease-in-out infinite`;
+            }
+            
+            document.body.appendChild(photo);
+            
+            // 照片落地后重新开始
+            photo.addEventListener('animationiteration', (e) => {
+                if (e.animationName === 'fall') {
+                    photo.style.left = `${Math.random() * window.innerWidth}px`;
+                    photo.style.top = '-120px';
+                    photo.src = photoUrls[Math.floor(Math.random() * photoUrls.length)];
+                }
+            });
+        }
+
+        // 添加点击事件
+        function addClickHandler() {
+            document.addEventListener('click', (e) => {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const photo = document.createElement('img');
+                        photo.className = 'photo';
+                        photo.src = photoUrls[Math.floor(Math.random() * photoUrls.length)];
+                        
+                        const size = Math.random() * (config.maxSize - config.minSize) + config.minSize;
+                        photo.style.width = `${size}px`;
+                        photo.style.height = `${size}px`;
+                        
+                        photo.style.left = `${e.clientX + (Math.random() * 80 - 40)}px`;
+                        photo.style.top = `${e.clientY + (Math.random() * 80 - 40)}px`;
+                        
+                        const duration = Math.random() * 5 + 4;
+                        photo.style.animationDuration = `${duration}s, ${duration * 0.6}s`;
+                        
+                        const sway = Math.random() * config.swayRange * 2 - config.swayRange;
+                        photo.style.setProperty('--sway-distance', `${sway}px`);
+                        
+                        document.body.appendChild(photo);
+                        
+                        // 5秒后移除点击创建的照片
+                        setTimeout(() => photo.remove(), 5000);
+                    }, i * 150);
+                }
+            });
+        }
+
+        // 处理窗口大小变化
+        function handleResize() {
+            const photos = document.querySelectorAll('.photo');
+            photos.forEach(photo => {
+                if (parseFloat(photo.style.left) > window.innerWidth) {
+                    photo.style.left = `${Math.random() * window.innerWidth}px`;
+                }
+            });
+        }
+
+        // 初始化
+        function init() {
+            preloadImages();
+            createPhotos();
+            addClickHandler();
+            
+            window.addEventListener('resize', handleResize);
+            
+            // 5秒后隐藏说明文字
+            setTimeout(() => {
+                document.querySelector('.instructions').style.opacity = '0';
+            }, 5000);
+        }
+
+        // 页面加载完成后启动
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
